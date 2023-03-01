@@ -16,7 +16,8 @@
       "strictNullChecks": true,
       "suppressImplicitAnyIndexErrors": true,
       "sourceMap": false,
-      "allowSyntheticDefaultImports": true
+      "allowSyntheticDefaultImports": true,
+      "skipLibCheck": true
     },
     "include": ["src"],
     "exclude": ["node_modules", "lib", "src/setupTests.ts"]
