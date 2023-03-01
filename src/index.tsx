@@ -11,7 +11,13 @@
  * @module NiceModal
  * */
 
-import React, { useEffect, useCallback, useContext, useReducer, ReactNode } from 'react';
+import React, {
+  useEffect,
+  useCallback,
+  useContext,
+  useReducer,
+  ReactNode,
+} from "react";
 
 export interface NiceModalState {
   id: string;
@@ -44,7 +50,8 @@ interface NiceModalCallbacks {
 /**
  * The handler to manage a modal returned by {@link useModal | useModal} hook.
  */
-export interface NiceModalHandler<Props = Record<string, unknown>> extends NiceModalState {
+export interface NiceModalHandler<Props = Record<string, unknown>>
+  extends NiceModalState {
   /**
    * Whether a modal is visible, it's controlled by {@link NiceModalHandler.show | show}/{@link NiceModalHandler.hide | hide} method.
    */
@@ -87,7 +94,7 @@ export interface NiceModalHocProps {
   defaultVisible?: boolean;
   keepMounted?: boolean;
 }
-const symModalId = Symbol('NiceModalId');
+const symModalId = Symbol("NiceModalId");
 const initialState: NiceModalStore = {};
 const NiceModalContext = React.createContext<NiceModalStore>(initialState);
 const NiceModalIdContext = React.createContext<string | null>(null);
@@ -99,16 +106,21 @@ const MODAL_REGISTRY: {
 } = {};
 const ALREADY_MOUNTED = {};
 
-let uidSeed = 0;
+let uidSeed = 1452;
 let dispatch: React.Dispatch<NiceModalAction> = () => {
-  throw new Error('No dispatch method detected, did you embed your app with NiceModal.Provider?');
+  throw new Error(
+    "No dispatch method detected, did you embed your app with NiceModal.Provider?"
+  );
 };
-const getUid = () => `_nice_modal_${uidSeed++}`;
+const getUid = () => `${uidSeed++}`;
 
 // Modal reducer used in useReducer hook.
-export const reducer = (state: NiceModalStore = initialState, action: NiceModalAction): NiceModalStore => {
+export const reducer = (
+  state: NiceModalStore = initialState,
+  action: NiceModalAction
+): NiceModalStore => {
   switch (action.type) {
-    case 'nice-modal/show': {
+    case "nice-modal/show": {
       const { modalId, args } = action.payload;
       return {
         ...state,
@@ -124,7 +136,7 @@ export const reducer = (state: NiceModalStore = initialState, action: NiceModalA
         },
       };
     }
-    case 'nice-modal/hide': {
+    case "nice-modal/hide": {
       const { modalId } = action.payload;
       if (!state[modalId]) return state;
       return {
@@ -135,13 +147,13 @@ export const reducer = (state: NiceModalStore = initialState, action: NiceModalA
         },
       };
     }
-    case 'nice-modal/remove': {
+    case "nice-modal/remove": {
       const { modalId } = action.payload;
       const newState = { ...state };
       delete newState[modalId];
       return newState;
     }
-    case 'nice-modal/set-flags': {
+    case "nice-modal/set-flags": {
       const { modalId, flags } = action.payload;
       return {
         ...state,
@@ -157,9 +169,12 @@ export const reducer = (state: NiceModalStore = initialState, action: NiceModalA
 };
 
 // action creator to show a modal
-function showModal(modalId: string, args?: Record<string, unknown>): NiceModalAction {
+function showModal(
+  modalId: string,
+  args?: Record<string, unknown>
+): NiceModalAction {
   return {
-    type: 'nice-modal/show',
+    type: "nice-modal/show",
     payload: {
       modalId,
       args,
@@ -168,9 +183,12 @@ function showModal(modalId: string, args?: Record<string, unknown>): NiceModalAc
 }
 
 // action creator to set flags of a modal
-function setModalFlags(modalId: string, flags: Record<string, unknown>): NiceModalAction {
+function setModalFlags(
+  modalId: string,
+  flags: Record<string, unknown>
+): NiceModalAction {
   return {
-    type: 'nice-modal/set-flags',
+    type: "nice-modal/set-flags",
     payload: {
       modalId,
       flags,
@@ -180,7 +198,7 @@ function setModalFlags(modalId: string, flags: Record<string, unknown>): NiceMod
 // action creator to hide a modal
 function hideModal(modalId: string): NiceModalAction {
   return {
-    type: 'nice-modal/hide',
+    type: "nice-modal/hide",
     payload: {
       modalId,
     },
@@ -190,7 +208,7 @@ function hideModal(modalId: string): NiceModalAction {
 // action creator to remove a modal
 function removeModal(modalId: string): NiceModalAction {
   return {
-    type: 'nice-modal/remove',
+    type: "nice-modal/remove",
     payload: {
       modalId,
     },
@@ -200,7 +218,7 @@ function removeModal(modalId: string): NiceModalAction {
 const modalCallbacks: NiceModalCallbacks = {};
 const hideModalCallbacks: NiceModalCallbacks = {};
 const getModalId = (modal: string | React.FC<any>): string => {
-  if (typeof modal === 'string') return modal as string;
+  if (typeof modal === "string") return modal as string;
   if (!modal[symModalId]) {
     modal[symModalId] = getUid();
   }
@@ -208,20 +226,43 @@ const getModalId = (modal: string | React.FC<any>): string => {
 };
 
 /** omit id and partial all required props */
-type NiceModalArgs<T> = T extends keyof JSX.IntrinsicElements | React.JSXElementConstructor<any>
-  ? Omit<React.ComponentProps<T>, 'id'>
+type NiceModalArgs<T> = T extends
+  | keyof JSX.IntrinsicElements
+  | React.JSXElementConstructor<any>
+  ? Omit<React.ComponentProps<T>, "id">
   : Record<string, unknown>;
-export function show<T extends any, C extends any>(modal: React.FC<C>, args?: NiceModalArgs<React.FC<C>>): Promise<T>;
+export function show<T extends any, C extends any>(
+  modal: React.FC<C>,
+  args?: NiceModalArgs<React.FC<C>>
+): Promise<T>;
 // export function show<T extends any, C extends React.FC>(modal: C, args?: Omit<React.ComponentProps<C>, 'id'>): Promise<T>;
-export function show<T extends any>(modal: string, args?: Record<string, unknown>): Promise<T>;
-export function show<T extends any, P extends any>(modal: string, args: P): Promise<T>;
+export function show<T extends any>(
+  modal: string,
+  args?: Record<string, unknown>
+): Promise<T>;
+export function show<T extends any, P extends any>(
+  modal: string,
+  args: P
+): Promise<T>;
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export function show(modal: React.FC<any> | string, args?: NiceModalArgs<React.FC<any>> | Record<string, unknown>) {
+export function show(
+  modal: React.FC<any> | string,
+  args?: NiceModalArgs<React.FC<any>> | Record<string, unknown>
+) {
   const modalId = getModalId(modal);
-  if (typeof modal !== 'string' && !MODAL_REGISTRY[modalId]) {
+  if (typeof modal !== "string" && !MODAL_REGISTRY[modalId]) {
     register(modalId, modal as React.FC);
   }
-
+  if (window) {
+    var url: any = new URL(window.location.href);
+    const urlParams = new URLSearchParams(window.location.search);
+    const midArr = urlParams.getAll("mid");
+    const filterArr = midArr.filter((id) => id == modalId);
+    if (!filterArr.length) {
+      url.searchParams.append("mid", modalId);
+      window.history.pushState(null, "", url);
+    }
+  }
   dispatch(showModal(modalId, args));
   if (!modalCallbacks[modalId]) {
     // `!` tell ts that theResolve will be written before it is used
@@ -245,6 +286,13 @@ export function hide<T>(modal: string | React.FC<any>): Promise<T>;
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function hide(modal: string | React.FC<any>) {
   const modalId = getModalId(modal);
+  if (window) {
+    const url = new URL(window.location.href);
+    const params = new URLSearchParams(url.search);
+    const newEntries = deleteParamsEntry(params, "mid", modalId);
+    url.search = newEntries.toString();
+    window.history.pushState(null, "", url);
+  }
   dispatch(hideModal(modalId));
   // Should also delete the callback for modal.resolve #35
   delete modalCallbacks[modalId];
@@ -276,17 +324,21 @@ const setFlags = (modalId: string, flags: Record<string, unknown>): void => {
   dispatch(setModalFlags(modalId, flags));
 };
 export function useModal(): NiceModalHandler;
-export function useModal(modal: string, args?: Record<string, unknown>): NiceModalHandler;
+export function useModal(
+  modal: string,
+  args?: Record<string, unknown>
+): NiceModalHandler;
 export function useModal<
   T extends React.FC<any>,
   ComponentProps extends NiceModalArgs<T>,
   PreparedProps extends Partial<ComponentProps> = {} | ComponentProps,
-  RemainingProps = Omit<ComponentProps, keyof PreparedProps> & Partial<ComponentProps>,
+  RemainingProps = Omit<ComponentProps, keyof PreparedProps> &
+    Partial<ComponentProps>,
   ResolveType = unknown
 >(
   modal: T,
-  args?: PreparedProps,
-): Omit<NiceModalHandler, 'show'> & {
+  args?: PreparedProps
+): Omit<NiceModalHandler, "show"> & {
   show: Partial<RemainingProps> extends RemainingProps
     ? (args?: RemainingProps) => Promise<ResolveType>
     : (args: RemainingProps) => Promise<ResolveType>;
@@ -296,7 +348,7 @@ export function useModal(modal?: any, args?: any): any {
   const modals = useContext(NiceModalContext);
   const contextModalId = useContext(NiceModalIdContext);
   let modalId: string | null = null;
-  const isUseComponent = modal && typeof modal !== 'string';
+  const isUseComponent = modal && typeof modal !== "string";
   if (!modal) {
     modalId = contextModalId;
   } else {
@@ -304,7 +356,7 @@ export function useModal(modal?: any, args?: any): any {
   }
 
   // Only if contextModalId doesn't exist
-  if (!modalId) throw new Error('No modal id found in NiceModal.useModal.');
+  if (!modalId) throw new Error("No modal id found in NiceModal.useModal.");
 
   const mid = modalId as string;
   // If use a component directly, register it.
@@ -314,9 +366,16 @@ export function useModal(modal?: any, args?: any): any {
     }
   }, [isUseComponent, mid, modal, args]);
 
+  useEffect(() => {
+    showModalIfAlreadyMounted();
+  }, [window.location.search]);
+
   const modalInfo = modals[mid];
 
-  const showCallback = useCallback((args?: Record<string, unknown>) => show(mid, args), [mid]);
+  const showCallback = useCallback(
+    (args?: Record<string, unknown>) => show(mid, args),
+    [mid]
+  );
   const hideCallback = useCallback(() => hide(mid), [mid]);
   const removeCallback = useCallback(() => remove(mid), [mid]);
   const resolveCallback = useCallback(
@@ -324,21 +383,21 @@ export function useModal(modal?: any, args?: any): any {
       modalCallbacks[mid]?.resolve(args);
       delete modalCallbacks[mid];
     },
-    [mid],
+    [mid]
   );
   const rejectCallback = useCallback(
     (args?: unknown) => {
       modalCallbacks[mid]?.reject(args);
       delete modalCallbacks[mid];
     },
-    [mid],
+    [mid]
   );
   const resolveHide = useCallback(
     (args?: unknown) => {
       hideModalCallbacks[mid]?.resolve(args);
       delete hideModalCallbacks[mid];
     },
-    [mid],
+    [mid]
   );
 
   return {
@@ -354,7 +413,9 @@ export function useModal(modal?: any, args?: any): any {
     resolveHide,
   };
 }
-export const create = <P extends {}>(Comp: React.ComponentType<P>): React.FC<P & NiceModalHocProps> => {
+export const create = <P extends {}>(
+  Comp: React.ComponentType<P>
+): React.FC<P & NiceModalHocProps> => {
   return ({ defaultVisible, keepMounted, id, ...props }) => {
     const { args, show } = useModal(id);
 
@@ -400,13 +461,34 @@ export const create = <P extends {}>(Comp: React.ComponentType<P>): React.FC<P &
 };
 
 // All registered modals will be rendered in modal placeholder
-export const register = <T extends React.FC<any>>(id: string, comp: T, props?: Partial<NiceModalArgs<T>>): void => {
+export const register = <T extends React.FC<any>>(
+  id: string,
+  comp: T,
+  props?: Partial<NiceModalArgs<T>>
+): void => {
   if (!MODAL_REGISTRY[id]) {
     MODAL_REGISTRY[id] = { comp, props };
   } else {
     MODAL_REGISTRY[id].props = props;
   }
 };
+
+function showModalIfAlreadyMounted() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const midArr = urlParams.getAll("mid");
+  midArr.forEach((id) => {
+    if (id && MODAL_REGISTRY[id]) {
+      dispatch(showModal(id));
+    }
+  });
+}
+
+function deleteParamsEntry(params: any, key: string, value: string | number) {
+  const newEntries: any = Array.from(params.entries()).filter(
+    ([k, v]: any) => !(k === key && v === value)
+  );
+  return new URLSearchParams(newEntries);
+}
 
 /**
  * Unregister a modal.
@@ -423,7 +505,9 @@ const NiceModalPlaceholder: React.FC = () => {
   const visibleModalIds = Object.keys(modals).filter((id) => !!modals[id]);
   visibleModalIds.forEach((id) => {
     if (!MODAL_REGISTRY[id] && !ALREADY_MOUNTED[id]) {
-      console.warn(`No modal found for id: ${id}. Please check the id or if it is registered or declared via JSX.`);
+      console.warn(
+        `No modal found for id: ${id}. Please check the id or if it is registered or declared via JSX.`
+      );
       return;
     }
   });
@@ -500,8 +584,13 @@ export const ModalDef: React.FC<Record<string, unknown>> = ({
 };
 
 export const antdModal = (
-  modal: NiceModalHandler,
-): { visible: boolean; onCancel: () => void; onOk: () => void; afterClose: () => void } => {
+  modal: NiceModalHandler
+): {
+  visible: boolean;
+  onCancel: () => void;
+  onOk: () => void;
+  afterClose: () => void;
+} => {
   return {
     visible: modal.visible,
     onOk: () => modal.hide(),
@@ -514,8 +603,13 @@ export const antdModal = (
   };
 };
 export const antdModalV5 = (
-  modal: NiceModalHandler,
-): { open: boolean; onCancel: () => void; onOk: () => void; afterClose: () => void } => {
+  modal: NiceModalHandler
+): {
+  open: boolean;
+  onCancel: () => void;
+  onOk: () => void;
+  afterClose: () => void;
+} => {
   const { onOk, onCancel, afterClose } = antdModal(modal);
   return {
     open: modal.visible,
@@ -525,8 +619,12 @@ export const antdModalV5 = (
   };
 };
 export const antdDrawer = (
-  modal: NiceModalHandler,
-): { visible: boolean; onClose: () => void; afterVisibleChange: (visible: boolean) => void } => {
+  modal: NiceModalHandler
+): {
+  visible: boolean;
+  onClose: () => void;
+  afterVisibleChange: (visible: boolean) => void;
+} => {
   return {
     visible: modal.visible,
     onClose: () => modal.hide(),
@@ -539,8 +637,12 @@ export const antdDrawer = (
   };
 };
 export const antdDrawerV5 = (
-  modal: NiceModalHandler,
-): { open: boolean; onClose: () => void; afterOpenChange: (visible: boolean) => void } => {
+  modal: NiceModalHandler
+): {
+  open: boolean;
+  onClose: () => void;
+  afterOpenChange: (visible: boolean) => void;
+} => {
   const { onClose, afterVisibleChange: afterOpenChange } = antdDrawer(modal);
   return {
     open: modal.visible,
@@ -548,7 +650,9 @@ export const antdDrawerV5 = (
     afterOpenChange,
   };
 };
-export const muiDialog = (modal: NiceModalHandler): { open: boolean; onClose: () => void; onExited: () => void } => {
+export const muiDialog = (
+  modal: NiceModalHandler
+): { open: boolean; onClose: () => void; onExited: () => void } => {
   return {
     open: modal.visible,
     onClose: () => modal.hide(),
@@ -560,8 +664,12 @@ export const muiDialog = (modal: NiceModalHandler): { open: boolean; onClose: ()
 };
 
 export const muiDialogV5 = (
-  modal: NiceModalHandler,
-): { open: boolean; onClose: () => void; TransitionProps: { onExited: () => void } } => {
+  modal: NiceModalHandler
+): {
+  open: boolean;
+  onClose: () => void;
+  TransitionProps: { onExited: () => void };
+} => {
   return {
     open: modal.visible,
     onClose: () => modal.hide(),
@@ -574,7 +682,7 @@ export const muiDialogV5 = (
   };
 };
 export const bootstrapDialog = (
-  modal: NiceModalHandler,
+  modal: NiceModalHandler
 ): { show: boolean; onHide: () => void; onExited: () => void } => {
   return {
     show: modal.visible,

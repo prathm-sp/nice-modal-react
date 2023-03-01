@@ -1,9 +1,9 @@
-import { useMemo, useCallback, useState } from 'react';
-import { Button, Table } from 'antd';
-import { EditOutlined } from '@ant-design/icons';
-import { useModal } from '@ebay/nice-modal-react';
-import UserInfoModal from './UserInfoModal';
-import mockData from './mock';
+import { useMemo, useCallback, useState } from "react";
+import { Button, Table } from "antd";
+import { EditOutlined } from "@ant-design/icons";
+import { useModal } from "@ebay/nice-modal-react";
+import UserInfoModal from "./UserInfoModal";
+import mockData from "./mock";
 
 export default function UserList() {
   const userModal = useModal(UserInfoModal);
@@ -28,23 +28,23 @@ export default function UserList() {
         });
       });
     },
-    [userModal],
+    [userModal]
   );
 
   const columns = useMemo(
     () => [
       {
-        title: 'Name',
-        dataIndex: 'name',
-        width: '150px',
+        title: "Name",
+        dataIndex: "name",
+        width: "150px",
       },
       {
-        title: 'Job Title',
-        dataIndex: 'job',
+        title: "Job Title",
+        dataIndex: "job",
       },
       {
-        title: 'Edit',
-        width: '100px',
+        title: "Edit",
+        width: "100px",
         render(value, user) {
           return (
             <Button
@@ -58,7 +58,7 @@ export default function UserList() {
         },
       },
     ],
-    [handleEditUser],
+    [handleEditUser]
   );
 
   return (
@@ -72,7 +72,7 @@ export default function UserList() {
         pagination={false}
         columns={columns}
         dataSource={users}
-        style={{ marginTop: '20px' }}
+        style={{ marginTop: "20px" }}
       />
     </div>
   );
